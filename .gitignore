@@ -8,4 +8,4 @@ architecture.txt
 CLAUDE.md
 __pycache__
 data/chroma/*
-.gitkeep
+!data/chroma/.gitkeep
