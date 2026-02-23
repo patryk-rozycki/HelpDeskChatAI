@@ -1,3 +1,4 @@
+import hashlib
 from langchain_chroma import Chroma
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_ollama import OllamaEmbeddings
@@ -13,10 +14,23 @@ class VectorStore:
             embedding_function=self.embeddings,
             persist_directory=config.chroma_persist_directory,
         )
+        
+    def doc_id(self, doc: Document) -> str:
+        content = f"{doc.metadata.get('source', '')}:{doc.page_content}"
+        return hashlib.md5(content.encode()).hexdigest()
     
-    def reset_and_load(self, all_splitter_documents: list[Document]) -> list[str]:
-        self.store.reset_collection()
-        return self.store.add_documents(documents=all_splitter_documents)
+    def comparison_new_document(self, documents: list[Document]) -> dict:
+        existing_ids = set(self.store.get()["ids"])
+        new_docs = []
+        new_ids = []
+        for doc in documents:
+            doc_id = self.doc_id(doc)
+            if doc_id not in existing_ids:
+                new_docs.append(doc)
+                new_ids.append(doc_id)
+        if new_docs:
+            self.store.add_documents(documents=new_docs, ids=new_ids)
+        return {"added": len(new_docs), "skipped": len(documents) - len(new_docs)}
     
     def get_retriever(self) -> VectorStoreRetriever:
-        return self.store.as_retriever()
+        return self.store.as_retriever(search_kwargs={"k": 8}, search_type="mmr", fetch_k=40)
