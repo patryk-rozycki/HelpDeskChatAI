@@ -6,4 +6,6 @@ env
 .claude
 architecture.txt
 CLAUDE.md
+data/chroma
+chroma
 
