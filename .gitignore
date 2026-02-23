@@ -7,5 +7,4 @@ env
 architecture.txt
 CLAUDE.md
 data/chroma
-chroma
 __pycache__
