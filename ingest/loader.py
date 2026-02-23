@@ -8,4 +8,5 @@ class DocumentLoader:
     
     def load_pdfs(self) -> list[Document]:
         loader = PyPDFDirectoryLoader(self.source_dir)
+        print(loader)
         return loader.load()

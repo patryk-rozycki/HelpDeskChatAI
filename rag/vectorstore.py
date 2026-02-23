@@ -31,6 +31,3 @@ class VectorStore:
         if new_docs:
             self.store.add_documents(documents=new_docs, ids=new_ids)
         return {"added": len(new_docs), "skipped": len(documents) - len(new_docs)}
-    
-    def get_retriever(self) -> VectorStoreRetriever:
-        return self.store.as_retriever(search_kwargs={"k": 8}, search_type="mmr", fetch_k=40)

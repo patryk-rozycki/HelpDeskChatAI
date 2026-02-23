@@ -1,27 +1,23 @@
-from agent.ingest.loader import DocumentLoader
-from agent.ingest.splitter import DocumentSplitter
-from agent.retrieval.chain import RagChain
-from agent.retrieval.vectorstore import VectorStore
+from agent.chain import RagChain
+from ingest.pipeline import run_ingest
+from rag.retriever import Retriever
+from rag.vectorstore import VectorStore
 
-
-loader = DocumentLoader()
-splitter = DocumentSplitter()
 vector_store = VectorStore()
 
-docs = loader.load_pdfs()
-all_splitter_documents = splitter.split_document(docs)
-# vector_store.reset_and_load(all_splitter_documents)
-handle_vector_documents = vector_store.comparison_new_document(all_splitter_documents)
-print(handle_vector_documents)
-retriever = vector_store.get_retriever()
+handle_vector_documents = vector_store.comparison_new_document(run_ingest())
+retriever = Retriever(vector_store.store)
+rag = RagChain(retriever.get_retriever())
 
-rag = RagChain(retriever)
+# Add addicional db for history per user
+history = []
 
 while True:
     query = input("Zadaj pytanie dla AI, lub wpisz exit: ")
     if query.lower() == "exit":
         print("Do zobaczenia!")
         break
-    response = rag.invoke(query)
+    response = rag.invoke(query, history)
+    history.append({"role": "user", "content": query })
+    history.append({"role": "assistent", "content": response})
     print(response)
-
